@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FitTrack - Fitness Trainer and Workout Progress</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+  <div id="notice" class="notice" hidden></div>
+
+  <main id="auth-view" class="auth">
+    <div class="card">
+      <h1>FitTrack</h1>
+      <p class="muted">Fitness trainer and workout progress</p>
+      <div class="tabs">
+        <button id="tab-login" class="tab active" type="button">Login</button>
+        <button id="tab-register" class="tab" type="button">Register</button>
+      </div>
+      <form id="login-form">
+        <label>Email <input name="email" type="email" required></label>
+        <label>Password <input name="password" type="password" required></label>
+        <button class="btn" type="submit">Login</button>
+      </form>
+      <form id="register-form" hidden>
+        <label>Name <input name="name" required></label>
+        <label>Email <input name="email" type="email" required></label>
+        <label>Password (min 6) <input name="password" type="password" minlength="6" required></label>
+        <label>Height in cm (for BMI) <input name="height_cm" type="number" min="50" max="260"></label>
+        <button class="btn" type="submit">Create account</button>
+      </form>
+      <p class="muted small">Trainer demo account: admin@fittrack.com / Admin@123</p>
+    </div>
+</main>
+
+  <div id="app-view" hidden>
+    <header>
+      <span><strong>FitTrack</strong> <span id="badge" class="badge"></span></span>
+      <nav id="nav"></nav>
+      <span><span id="who"></span> <button id="logout" class="btn small ghost" type="button">Logout</button></span>
+    </header>
+
+    <main>
+      <!-- USER: dashboard -->
+      <section id="page-dashboard" hidden>
+        <div id="coach" class="card" hidden></div>
+        <div class="stats" id="stats"></div>
+        <div class="grid">
+          <div class="card"><h3>Workouts per week</h3><div class="chart-box"><canvas id="chart-weekly"></canvas></div></div>
+          <div class="card"><h3>Weight lifted (kg total)</h3><div class="chart-box"><canvas id="chart-volume"></canvas></div></div>
+          <div class="card"><h3>Body weight (kg)</h3><div class="chart-box"><canvas id="chart-weight"></canvas></div></div>
+          <div class="card"><h3>Personal records</h3><div id="records"></div></div>
+        </div>
+      </section>
+
+      <!-- TRAINER: clients -->
+      <section id="page-clients" hidden>
+        <div class="stats" id="client-stats"></div>
+        <div class="card scroll">
+          <h3>Clients and their progress</h3>
+          <table><thead><tr><th>Client</th><th>Plan</th><th>Workouts</th><th>This week</th><th>Last workout</th><th>Weight change</th><th>Goals</th><th></th></tr></thead>
+          <tbody id="client-list"></tbody></table>
+        </div>
+      </section>
+
+      <!-- TRAINER: one client -->
+      <section id="page-client" hidden>
+        <button class="btn ghost small" type="button" id="client-back">&larr; All clients</button>
+        <div id="client-head" class="card"></div>
+        <div class="grid">
+          <div class="card"><h3>Workouts per week</h3><div class="chart-box"><canvas id="chart-c-weekly"></canvas></div></div>
+          <div class="card"><h3>Body weight (kg)</h3><div class="chart-box"><canvas id="chart-c-weight"></canvas></div></div>
+          <div class="card">
+            <h3>Assign plan</h3>
+            <select id="client-plan"></select>
+            <button class="btn small" type="button" id="client-plan-save">Save plan</button>
+            <h3>Send feedback</h3>
+            <form id="note-form"><textarea name="note" rows="3" maxlength="500" placeholder="Great week! Add 5 minutes of stretching..." required></textarea>
+            <button class="btn small" type="submit">Send note</button></form>
+            <div id="client-notes" class="small"></div>
+          </div>
+          <div class="card"><h3>Goals</h3><div id="client-goals"></div></div>
+        </div>
+        <div class="card scroll"><h3>Recent workouts</h3>
+          <table><thead><tr><th>Date</th><th>Exercise</th><th>Sets x Reps</th><th>Weight</th><th>Min</th><th>Calories</th></tr></thead><tbody id="client-workouts"></tbody></table></div>
+      </section>
+
+      <!-- both: exercises -->
+      <section id="page-exercises" hidden>
+        <div class="toolbar">
+          <input id="ex-search" placeholder="Search exercise or muscle">
+          <select id="ex-category"><option value="">All categories</option></select>
+          <button id="ex-add" class="btn" type="button" hidden>+ Add exercise</button>
+        </div>
+        <form id="ex-form" class="card" hidden>
+          <input type="hidden" name="id">
+          <div class="row">
+            <label>Name <input name="name" required></label>
+            <label>Category <input name="category" required placeholder="Legs, Chest, Cardio..."></label>
+            <label>Muscle <input name="muscle"></label>
+            <label>Calories / min <input name="calories_per_min" type="number" step="0.1" min="0.1" value="5"></label>
+          </div>
+          <label>Steps (one per line) <textarea name="steps" rows="3"></textarea></label>
+          <label>Tip <input name="tips"></label>
+          <label>Exact YouTube video link (one video, e.g. https://www.youtube.com/watch?v=...) or /static/videos/file.mp4 <input name="video_url"></label>
+          <button class="btn" type="submit">Save exercise</button>
+          <button class="btn ghost" type="button" data-close="ex-form">Cancel</button>
+        </form>
+        <div id="ex-list" class="grid"></div>
+      </section>
+
+      <!-- USER: workouts -->
+      <section id="page-workouts" hidden>
+        <form id="wk-form" class="card">
+          <h3 id="wk-title">Log a workout</h3>
+          <input type="hidden" name="id">
+          <div class="row">
+            <label>Exercise <select name="exercise_id" id="wk-exercise" required></select></label>
+            <label>Sets <input name="sets" type="number" min="1" value="3"></label>
+            <label>Reps <input name="reps" type="number" min="1" value="10"></label>
+            <label>Weight (kg) <input name="weight" type="number" min="0" step="0.5" value="0"></label>
+            <label>Minutes <input name="duration" type="number" min="0" value="10"></label>
+            <label>Date <input name="workout_date" type="date"></label>
+          </div>
+          <button class="btn" type="submit">Save workout</button>
+          <button class="btn ghost" type="button" id="wk-cancel" hidden>Cancel edit</button>
+        </form>
+        <div class="toolbar">
+          <select id="wk-filter-ex"><option value="">All exercises</option></select>
+          <input id="wk-filter-date" type="date">
+          <button id="wk-export" class="btn ghost" type="button">Export CSV</button>
+        </div>
+        <div class="card scroll"><table><thead><tr><th>Date</th><th>Exercise</th><th>Sets x Reps</th><th>Weight</th><th>Min</th><th>Calories</th><th></th></tr></thead><tbody id="wk-list"></tbody></table></div>
+      </section>
+
+      <!-- both: plans -->
+      <section id="page-plans" hidden>
+        <form id="plan-form" class="card" hidden>
+          <h3>Create a plan</h3>
+          <div class="row"><label>Plan name <input name="name" required></label><label>Description <input name="description"></label></div>
+          <div id="plan-rows"></div>
+          <button class="btn ghost small" type="button" id="plan-add-row">+ Add exercise</button>
+          <button class="btn" type="submit">Save plan</button>
+        </form>
+        <div id="plan-list"></div>
+      </section>
+
+      <!-- USER: progress -->
+      <section id="page-progress" hidden>
+        <div class="card"><h3>Weight trend (kg)</h3><div class="chart-box"><canvas id="chart-progress"></canvas></div></div>
+        <div class="grid">
+          <form id="ms-form" class="card">
+            <h3>Log body measurements</h3>
+            <label>Weight (kg) <input name="weight_kg" type="number" step="0.1" required></label>
+            <label>Body fat % (optional) <input name="body_fat" type="number" step="0.1"></label>
+            <label>Waist cm (optional) <input name="waist_cm" type="number" step="0.1"></label>
+            <button class="btn" type="submit">Save</button>
+            <div id="ms-list" class="small"></div>
+          </form>
+          <form id="goal-form" class="card">
+            <h3>Goals</h3>
+            <label>Goal <input name="title" required placeholder="Reach 70 kg"></label>
+            <label>Target weight (kg) <input name="target_weight" type="number" step="0.1"></label>
+            <label>Deadline <input name="deadline" type="date"></label>
+            <button class="btn" type="submit">Add goal</button>
+            <div id="goal-list"></div>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="modal" class="modal" hidden>
+    <div class="card modal-body">
+      <button id="modal-close" class="btn small ghost" type="button">Close</button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

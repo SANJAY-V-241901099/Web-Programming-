@@ -1,0 +1,23 @@
+# One line per exercise:   Exercise name | exact YouTube video URL
+# Channel used: ScottHermanFitness  (https://www.youtube.com/@ScottHermanFitness)
+# How to fill a line: open the channel, search "How To <exercise>", open ONE video,
+# copy the address-bar link (https://www.youtube.com/watch?v=...) and paste it after the | sign.
+# Lines starting with # are ignored. Only exercises with an empty video are filled at startup,
+# so restart the app after editing. To change a video later, use Exercises > Edit as trainer.
+
+Barbell Squat | https://www.youtube.com/watch?v=1oed-UmAxFs
+
+# Push-Up |
+# Deadlift |
+# Bench Press |
+# Pull-Up |
+# Plank |
+# Lunges |
+# Shoulder Press |
+# Bicep Curl |
+# Burpees |
+# Running |
+# Jump Rope |
+# Bent-Over Row |
+# Mountain Climbers |
+# Crunches |
